@@ -13,5 +13,5 @@ export interface CreateMovieRequest {
   yearReleased: number;
   rating: 'G' | 'PG' | 'M' | 'MA' | 'R';
 }
-//export type UpdateMovieRequest = Partial<CreateMovieRequest>;
-export interface UpdateMovieRequest extends Partial<CreateMovieRequest> {}
+export type UpdateMovieRequest = Partial<CreateMovieRequest>;
+//export interface UpdateMovieRequest extends Partial<CreateMovieRequest> {}

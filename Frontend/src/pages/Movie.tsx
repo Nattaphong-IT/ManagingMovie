@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Button } from '../components/UI/Button';
 import { Input } from '../components/UI/input'
-import { useMovies } from '@/context/MovieContext';           // 🔗 ต่อ backend: ดึงรายการหนัง
-import { useAuth } from '@/context/AuthContext';            // 🔗 ต่อ backend: ดึงข้อมูล user
+import { useMovies } from '../context/MovieContext';           // 🔗 ต่อ backend: ดึงรายการหนัง
+import { useAuth } from '../context/AuthContext';            // 🔗 ต่อ backend: ดึงข้อมูล user
 import { MovieCard } from '../components/Movies/MovieCard';
 import { Plus, Search, Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
