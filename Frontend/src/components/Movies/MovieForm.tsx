@@ -1,22 +1,22 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle
-} from '@/components/ui/card';
+} from '../ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue
-} from '@/components/ui/select';
-import { CreateMovieRequest } from '@/types/movie.types';
+} from '../ui/select';
+import { CreateMovieRequest } from '../../../types/movie.type';
 import { Loader2 } from 'lucide-react';
 
 interface MovieFormProps {
@@ -41,7 +41,7 @@ export const MovieForm: React.FC<MovieFormProps> = ({
   } = useForm<CreateMovieRequest>({
     defaultValues: {
       title: initialData?.title || '',
-      yearReleased: initialData?.yearReleased || new Date().getFullYear(),
+      year: initialData?.year || new Date().getFullYear(),
       rating: initialData?.rating || 'G',
     },
   });
@@ -92,19 +92,19 @@ export const MovieForm: React.FC<MovieFormProps> = ({
 
           {/* Year Released */}
           <div className="space-y-1">
-            <Label htmlFor="yearReleased" className="text-text">
+            <Label htmlFor="year" className="text-text">
               Year Released
             </Label>
             <Input
-              id="yearReleased"
+              id="year"
               type="number"
               min={1888}
               max={new Date().getFullYear() + 5}
               placeholder="e.g., 2024"
               className={`bg-backgroundEnd text-text placeholder-muted border border-${
-                errors.yearReleased ? 'destructive' : 'muted'
+                errors.year ? 'destructive' : 'muted'
               }`}
-              {...register('yearReleased', {
+              {...register('year', {
                 required: 'Year is required',
                 min: { value: 1888, message: 'Year must be 1888 or later' },
                 max: {
@@ -114,9 +114,9 @@ export const MovieForm: React.FC<MovieFormProps> = ({
                 valueAsNumber: true,
               })}
             />
-            {errors.yearReleased && (
+            {errors.year && (
               <p className="text-sm text-destructive">
-                {errors.yearReleased.message}
+                {errors.year.message}
               </p>
             )}
           </div>
@@ -128,7 +128,7 @@ export const MovieForm: React.FC<MovieFormProps> = ({
             </Label>
             <Select
               value={rating}
-              onValueChange={(val) => setValue('rating', val as any)}
+              onValueChange={(val:string) => setValue('rating', val as any)}
             >
               <SelectTrigger
                 className={`bg-backgroundEnd text-text border border-${

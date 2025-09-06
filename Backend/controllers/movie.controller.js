@@ -4,19 +4,37 @@ import Movie from "../models/movie.model.js";
 // GET /api/movies
 export const getMovies = async (req, res) => {
   try {
-    const movies = await Movie.find();
-    res.json({ success: true, data: movies });
+    const movies = await Movie.find().populate('createdBy', 'name');
+
+    const formatted = movies.map(m => {
+      let createdByName = '';
+      if (m.createdBy && typeof m.createdBy === 'object' && m.createdBy.name) {
+        createdByName = m.createdBy.name; // จาก populate
+      } else if (typeof m.createdBy === 'string') {
+        createdByName = m.createdBy; // จาก string เดิม
+      }
+      return { ...m.toObject(), createdByName };
+    });
+
+    res.json({ success: true, data: formatted });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 };
-
 // POST /api/movies
 export const createMovie = async (req, res) => {
   try {
     const { title, year, rating } = req.body;
-    const newMovie = new Movie({ title, year, rating });
+
+    const newMovie = new Movie({
+      title,
+      year,
+      rating,
+      createdBy: req.user.username, // ✅ เก็บเป็นชื่อผู้ใช้เหมือนข้อมูลเก่า
+    });
+
     await newMovie.save();
+
     res.status(201).json({ success: true, data: newMovie });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });

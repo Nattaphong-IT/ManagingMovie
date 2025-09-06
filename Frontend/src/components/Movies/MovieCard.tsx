@@ -1,13 +1,13 @@
 import React from 'react';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Movie } from '@/types/movie.types';
-import { useAuth } from '@/context/AuthContext';
-import { useMovies } from '@/context/MovieContext';
+import { Card, CardContent, CardFooter } from '../../components/ui/card';
+import { Button } from '../../components/ui/Button';
+import { Badge } from '../../components/ui/badge';
+import { Movie } from '../../../types/movie.type';
+import { useAuth } from '../../context/AuthContext';
+import { useMovies } from '../../context/MovieContext';
 import { useNavigate } from 'react-router-dom';
 import { Edit, Trash2, Eye, Calendar, User } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '../../hooks/use-toast';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,29 +18,41 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+} from '../ui/alert-dialog';
 
 interface MovieCardProps {
   movie: Movie;
 }
 
 export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
-  const { user } = useAuth();                                 // 🔗 ต่อ backend: ดึงข้อมูล user
-  const { deleteMovie } = useMovies();                        // 🔗 ต่อ backend: เมธอดลบหนัง
+  const { user } = useAuth();
+  const { deleteMovie } = useMovies();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // แปลงค่า createdBy เป็น string สำหรับแสดงผลเสมอ
+  const createdByText =
+    typeof movie.createdBy === 'string'
+      ? movie.createdBy
+      : movie.createdBy?.name ?? 'Unknown';
+
+  // เช็คความเป็นเจ้าของให้รองรับทั้ง string (username) และ object (ObjectId)
+  const isOwner =
+    typeof movie.createdBy === 'string'
+      ? user?.username === movie.createdBy
+      : (user?.id ?? user?.id) === movie.createdBy?._id;
 
   const canEdit =
     user?.role === 'MANAGER' ||
     user?.role === 'TEAMLEADER' ||
-    user?.username === movie.createdBy;
+    isOwner;
+
   const canDelete =
     user?.role === 'MANAGER' ||
-    (user?.role === 'TEAMLEADER' && user.username === movie.createdBy);
+    (user?.role === 'TEAMLEADER' && isOwner);
 
   const handleDelete = async () => {
     try {
-      // 🔗 ต่อ backend: เรียกลบหนัง
       await deleteMovie(movie.id);
       toast({
         title: 'Movie deleted',
@@ -56,7 +68,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
   };
 
   const getRatingColor = (rating: string) => {
-    // สามารถปรับให้ใช้ token ของคุณเพิ่มเติมได้
     switch (rating) {
       case 'G':
         return 'bg-green-500/20 text-green-400 border-green-500/50';
@@ -83,7 +94,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
           >
             {movie.rating}
           </Badge>
-          <span className="text-sm text-muted">{movie.yearReleased}</span>
+          <span className="text-sm text-muted">{movie.year}</span>
         </div>
 
         <h3 className="font-semibold text-lg mb-2 text-text group-hover:text-primary transition-colors">
@@ -93,7 +104,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
         <div className="space-y-2 text-sm text-muted">
           <div className="flex items-center space-x-2">
             <User className="h-4 w-4 text-muted" />
-            <span>Added by {movie.createdBy}</span>
+            <span>Added by {createdByText}</span>
           </div>
           <div className="flex items-center space-x-2">
             <Calendar className="h-4 w-4 text-muted" />
@@ -107,7 +118,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
           variant="outline"
           size="sm"
           className="flex-1 text-text hover:text-accent border border-muted"
-          onClick={() => navigate(`/movies/${movie.id}`)}  // front-end routing
+          onClick={() => navigate(`/movies/${movie.id}`)}
         >
           <Eye className="h-4 w-4 mr-1" />
           View
@@ -118,7 +129,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
             variant="outline"
             size="sm"
             className="text-primary hover:text-accent border border-primary/50"
-            onClick={() => navigate(`/movies/${movie.id}/edit`)}  // front-end routing
+            onClick={() => navigate(`/movies/${movie.id}/edit`)}
           >
             <Edit className="h-4 w-4" />
           </Button>
@@ -139,7 +150,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete Movie</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to delete "{movie.title}"? This action
+                  Are you sure you want to delete &quot;{movie.title}&quot;? This action
                   cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>

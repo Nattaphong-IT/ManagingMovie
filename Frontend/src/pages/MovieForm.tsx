@@ -1,31 +1,48 @@
+// src/pages/MovieFormPage.tsx
 import React from 'react';
-import { MovieForm } from '@/components/movies/MovieForm';
-import { useMovies } from '@/context/MovieContext';   // ดึง context ที่ติดต่อ backend
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
+import {MovieForm} from '../components/Movies/MovieForm';    // ← เปลี่ยนเป็น default import
+import { useMovies } from '../context/MovieContext';
+import { useToast } from '../hooks/use-toast';
 import { CreateMovieRequest } from '../../types/movie.type';
 
-export const MovieFormPage: React.FC = () => {
-  const { createMovie, loading } = useMovies();      // ดึงเมธอด createMovie → ติดต่อ backend
+const MovieFormPage: React.FC = () => {
+  const { createMovie, loading } = useMovies();
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  /**
+   * onSubmit ของ MovieForm จะได้ข้อมูล { title, year, rating }
+   * ซึ่งตรงกับ CreateMovieRequest แต่ year อาจมาเป็น string
+   * ให้แปลงเป็น number ก่อนส่ง
+   */
   const handleSubmit = async (data: CreateMovieRequest) => {
+    const yearNum = Number(data.year);
+    const payload: CreateMovieRequest = {
+      title: data.title.trim(),
+      year: yearNum,
+      rating: data.rating,
+    };
+
     try {
-      // 🔗 ต่อ backend: สร้างหนังใหม่
-      await createMovie(data);
+      await createMovie(payload);
 
       toast({
-        title: 'Movie added successfully!',
-        description: `"${data.title}" has been added to your collection.`,
+        title: 'เพิ่มหนังเรียบร้อย!',
+        description: `"${payload.title}" ถูกเพิ่มแล้ว`,
       });
 
-      navigate('/movies');    // front-end routing
-    } catch (error) {
+      navigate('/movies', { replace: true });
+    } catch (err: any) {
+      const description =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        'ไม่สามารถเพิ่มหนังได้ ลองใหม่อีกครั้ง';
       toast({
         variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to add movie. Please try again.',
+        title: 'เกิดข้อผิดพลาด',
+        description,
       });
     }
   };
@@ -47,3 +64,5 @@ export const MovieFormPage: React.FC = () => {
     </div>
   );
 };
+
+export default MovieFormPage;

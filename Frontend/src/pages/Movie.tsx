@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Button } from '../components/UI/Button';
-import { Input } from '../components/UI/input'
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/input'
 import { useMovies } from '../context/MovieContext';           // 🔗 ต่อ backend: ดึงรายการหนัง
 import { useAuth } from '../context/AuthContext';            // 🔗 ต่อ backend: ดึงข้อมูล user
 import { MovieCard } from '../components/Movies/MovieCard';
@@ -12,7 +12,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../components/UI/select';
+} from '../components/ui/select';
 
 export const MoviesPage: React.FC = () => {
   const { movies, loading } = useMovies();  // 🔗 ต่อ backend
@@ -47,7 +47,7 @@ export const MoviesPage: React.FC = () => {
         case 'title':
           return a.title.localeCompare(b.title);
         case 'year':
-          return b.yearReleased - a.yearReleased;
+          return b.year - a.year;
         default:
           return 0;
       }
@@ -157,3 +157,4 @@ export const MoviesPage: React.FC = () => {
     </div>
   );
 };
+export default MoviesPage;

@@ -20,7 +20,7 @@
     }
   },
   "rules": {
-    "no-console": 2
+    "no-console": 2,
+    "react/prop-types": "off"  // ✅ ปิดการเช็ค propTypes
   }
 }
-  

@@ -1,20 +1,20 @@
+// context/MovieContext.tsx
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { Movie, CreateMovieRequest } from '../../types/movie.type';
+import { Movie, CreateMovieRequest, UpdateMovieRequest } from '../../types/movie.type';
 import { useAuth } from './AuthContext';
+import { api } from '../../lib/utils';
 
 interface MovieContextType {
   movies: Movie[];
   loading: boolean;
   error: string | null;
   createMovie: (movie: CreateMovieRequest) => Promise<void>;
-  updateMovie: (id: string, movie: CreateMovieRequest) => Promise<void>;
+  updateMovie: (id: string, movie: UpdateMovieRequest) => Promise<void>;
   deleteMovie: (id: string) => Promise<void>;
   getMovieById: (id: string) => Movie | undefined;
 }
 
-const MovieContext = createContext<MovieContextType | undefined>(undefined);
-
-type MovieAction = 
+type MovieAction =
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'SET_MOVIES'; payload: Movie[] }
@@ -22,7 +22,12 @@ type MovieAction =
   | { type: 'UPDATE_MOVIE'; payload: { id: string; movie: Partial<Movie> } }
   | { type: 'DELETE_MOVIE'; payload: string };
 
-const movieReducer = (state: { movies: Movie[]; loading: boolean; error: string | null }, action: MovieAction) => {
+const MovieContext = createContext<MovieContextType | undefined>(undefined);
+
+const movieReducer = (
+  state: { movies: Movie[]; loading: boolean; error: string | null },
+  action: MovieAction
+) => {
   switch (action.type) {
     case 'SET_LOADING':
       return { ...state, loading: action.payload };
@@ -35,161 +40,147 @@ const movieReducer = (state: { movies: Movie[]; loading: boolean; error: string 
     case 'UPDATE_MOVIE':
       return {
         ...state,
-        movies: state.movies.map(movie =>
-          movie.id === action.payload.id
-            ? { ...movie, ...action.payload.movie }
-            : movie
-        )
+        movies: state.movies.map(m =>
+          m.id === action.payload.id ? { ...m, ...action.payload.movie } : m
+        ),
       };
     case 'DELETE_MOVIE':
-      return {
-        ...state,
-        movies: state.movies.filter(movie => movie.id !== action.payload)
-      };
+      return { ...state, movies: state.movies.filter(m => m.id !== action.payload) };
     default:
       return state;
   }
 };
 
-const initialState = {
-  movies: [],
-  loading: false,
-  error: null,
-};
-
-// Mock movies for demonstration
-const mockMovies: Movie[] = [
-  {
-    id: '1',
-    title: 'The Shawshank Redemption',
-    yearReleased: 1994,
-    rating: 'R',
-    createdBy: 'manager',
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
-  },
-  {
-    id: '2',
-    title: 'The Godfather',
-    yearReleased: 1972,
-    rating: 'R',
-    createdBy: 'manager',
-    createdAt: new Date('2024-01-02'),
-    updatedAt: new Date('2024-01-02'),
-  },
-  {
-    id: '3',
-    title: 'The Dark Knight',
-    yearReleased: 2008,
-    rating: 'M',
-    createdBy: 'teamlead',
-    createdAt: new Date('2024-01-03'),
-    updatedAt: new Date('2024-01-03'),
-  },
-];
+const initialState = { movies: [], loading: false, error: null };
 
 export const MovieProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(movieReducer, initialState);
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated, ready, user } = useAuth();
 
+  // ดึงข้อมูลหนัง
   useEffect(() => {
-    if (isAuthenticated) {
-      // Load movies from localStorage or use mock data
-      const savedMovies = localStorage.getItem('movies');
-      if (savedMovies) {
-        dispatch({ type: 'SET_MOVIES', payload: JSON.parse(savedMovies) });
-      } else {
-        dispatch({ type: 'SET_MOVIES', payload: mockMovies });
-        localStorage.setItem('movies', JSON.stringify(mockMovies));
-      }
+    if (ready && isAuthenticated) {
+      dispatch({ type: 'SET_LOADING', payload: true });
+      api.get('/movies')
+        .then(res => {
+          const raw = res.data?.data || [];
+          const movies: Movie[] = raw.map((m: any) => ({
+            id: m._id, // ✅ normalize id
+            title: m.title ?? '',
+            year: m.year ?? 0,
+            rating: m.rating ?? '',
+            createdBy: m.createdBy ?? '',
+            createdAt: m.createdAt ?? '',
+            updatedAt: m.updatedAt ?? '',
+          }));
+          dispatch({ type: 'SET_MOVIES', payload: movies });
+        })
+        .catch(err => {
+          dispatch({
+            type: 'SET_ERROR',
+            payload: err.response?.data?.message || err.message,
+          });
+        })
+        .finally(() => {
+          dispatch({ type: 'SET_LOADING', payload: false });
+        });
     }
-  }, [isAuthenticated]);
+  }, [ready, isAuthenticated]);
 
   const createMovie = async (movieData: CreateMovieRequest) => {
     if (!user) throw new Error('User not authenticated');
-    
     dispatch({ type: 'SET_LOADING', payload: true });
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const newMovie: Movie = {
-      id: Date.now().toString(),
-      ...movieData,
-      createdBy: user.username,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    
-    dispatch({ type: 'ADD_MOVIE', payload: newMovie });
-    
-    // Update localStorage
-    const updatedMovies = [...state.movies, newMovie];
-    localStorage.setItem('movies', JSON.stringify(updatedMovies));
-    
-    dispatch({ type: 'SET_LOADING', payload: false });
+    try {
+      const res = await api.post('/movies', movieData);
+      const payload = res.data?.data ?? res.data;
+      const movie: Movie = {
+        id: payload._id ?? payload.id,
+        title: payload.title ?? '',
+        year: payload.year ?? 0,
+        rating: payload.rating ?? '',
+        createdBy: payload.createdBy ?? '',
+        createdAt: payload.createdAt ?? '',
+        updatedAt: payload.updatedAt ?? '',
+      };
+      dispatch({ type: 'ADD_MOVIE', payload: movie });
+    } catch (err: any) {
+      dispatch({
+        type: 'SET_ERROR',
+        payload: err.response?.data?.message || err.message,
+      });
+      throw err;
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
+    }
   };
 
-  const updateMovie = async (id: string, movieData: CreateMovieRequest) => {
+  const updateMovie = async (id: string, movieData: UpdateMovieRequest) => {
     if (!user) throw new Error('User not authenticated');
-    
     dispatch({ type: 'SET_LOADING', payload: true });
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const updatedMovie = { ...movieData, updatedAt: new Date() };
-    dispatch({ type: 'UPDATE_MOVIE', payload: { id, movie: updatedMovie } });
-    
-    // Update localStorage
-    const updatedMovies = state.movies.map(movie =>
-      movie.id === id ? { ...movie, ...updatedMovie } : movie
-    );
-    localStorage.setItem('movies', JSON.stringify(updatedMovies));
-    
-    dispatch({ type: 'SET_LOADING', payload: false });
+    try {
+      const res = await api.patch(`/movies/${id}`, movieData);
+      const payload = res.data?.data ?? res.data;
+      dispatch({
+        type: 'UPDATE_MOVIE',
+        payload: {
+          id,
+          movie: {
+            title: payload.title ?? '',
+            year: payload.year ?? 0,
+            rating: payload.rating ?? '',
+            updatedAt: payload.updatedAt ?? '',
+          },
+        },
+      });
+    } catch (err: any) {
+      dispatch({
+        type: 'SET_ERROR',
+        payload: err.response?.data?.message || err.message,
+      });
+      throw err;
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
+    }
   };
 
   const deleteMovie = async (id: string) => {
-    if (!user || (user.role !== 'MANAGER' && user.role !== 'TEAMLEADER')) {
-      throw new Error('Insufficient permissions');
-    }
-    
+    if (!user) throw new Error('User not authenticated');
     dispatch({ type: 'SET_LOADING', payload: true });
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    dispatch({ type: 'DELETE_MOVIE', payload: id });
-    
-    // Update localStorage
-    const updatedMovies = state.movies.filter(movie => movie.id !== id);
-    localStorage.setItem('movies', JSON.stringify(updatedMovies));
-    
-    dispatch({ type: 'SET_LOADING', payload: false });
+    try {
+      await api.delete(`/movies/${id}`);
+      dispatch({ type: 'DELETE_MOVIE', payload: id });
+    } catch (err: any) {
+      dispatch({
+        type: 'SET_ERROR',
+        payload: err.response?.data?.message || err.message,
+      });
+      throw err;
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
+    }
   };
 
-  const getMovieById = (id: string) => {
-    return state.movies.find(movie => movie.id === id);
-  };
+  const getMovieById = (id: string) => state.movies.find(m => m.id === id);
 
   return (
-    <MovieContext.Provider value={{
-      ...state,
-      createMovie,
-      updateMovie,
-      deleteMovie,
-      getMovieById,
-    }}>
+    <MovieContext.Provider
+      value={{
+        movies: state.movies,
+        loading: state.loading,
+        error: state.error,
+        createMovie,
+        updateMovie,
+        deleteMovie,
+        getMovieById,
+      }}
+    >
       {children}
     </MovieContext.Provider>
   );
 };
 
 export const useMovies = () => {
-  const context = useContext(MovieContext);
-  if (context === undefined) {
-    throw new Error('useMovies must be used within a MovieProvider');
-  }
-  return context;
+  const ctx = useContext(MovieContext);
+  if (!ctx) throw new Error('useMovies must be used within a MovieProvider');
+  return ctx;
 };

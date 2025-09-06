@@ -1,7 +1,8 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/context/AuthContext';
+import { Button } from '../../components/ui/Button';
+import { useAuth } from '../..//context/AuthContext';
 import { LogOut, User, Film } from 'lucide-react';
+import { Movie } from '../../../types/movie.type';
 
 export const Header: React.FC = () => {
   const { user, logout } = useAuth();
@@ -24,12 +25,12 @@ export const Header: React.FC = () => {
       <div className="flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center space-x-4">
-          <Film className="h-8 w-8 text-primary" />
+          <Film className="h-8 w-8 text-text" />
           <h1
-            className="text-2xl font-bold bg-clip-text text-transparent 
+            className="text-2xl font-bold bg-clip-text text-text 
                        bg-gradient-to-r from-primary to-accent"
           >
-            MovieVault
+           Managing Movie
           </h1>
         </div>
 

@@ -1,9 +1,9 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/UI/card'
-import { useMovies } from '@/context/MovieContext';     // ดึงจาก backend: รายการหนัง
-import { useAuth } from '@/context/AuthContext';       // ดึงจาก backend: ข้อมูลผู้ใช้
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
+import { useMovies } from '../context/MovieContext';     // ดึงจาก backend: รายการหนัง
+import { useAuth } from '../context/AuthContext';       // ดึงจาก backend: ข้อมูลผู้ใช้
 import { Film, Plus, TrendingUp, Users } from 'lucide-react';
-import { Button } from '../components/UI/Button'
+import { Button } from '../components/ui/Button'
 import { useNavigate } from 'react-router-dom';
 
 export const DashboardPage: React.FC = () => {
@@ -12,10 +12,10 @@ export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
 
   const totalMovies = movies.length;
-  //const moviesByRating = movies.reduce((acc, movie) => {
-   // acc[movie.rating] = (acc[movie.rating] || 0) + 1;
-  //  return acc;
-//  }, {} as Record<string, number>);
+  const moviesByRating = movies.reduce((acc, movie) => {
+   acc[movie.rating] = (acc[movie.rating] || 0) + 1;
+   return acc;
+  }, {} as Record<string, number>);
 
   const recentMovies = movies
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -95,7 +95,7 @@ export const DashboardPage: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-text">
-                {movies.filter(m => m.yearReleased === new Date().getFullYear()).length}
+                {movies.filter(m => m.year === new Date().getFullYear()).length}
               </div>
               <p className="text-xs text-muted">Recent releases</p>
             </CardContent>
@@ -121,7 +121,7 @@ export const DashboardPage: React.FC = () => {
                       <div>
                         <h3 className="font-medium text-text">{movie.title}</h3>
                         <p className="text-sm text-muted">
-                          {movie.yearReleased} • {movie.rating}
+                          {movie.year} • {movie.rating}
                         </p>
                       </div>
                       <Button
@@ -172,3 +172,4 @@ export const DashboardPage: React.FC = () => {
     </div>
   );
 };
+export default DashboardPage;
