@@ -87,33 +87,42 @@ export const MovieProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [ready, isAuthenticated]);
 
+
   const createMovie = async (movieData: CreateMovieRequest) => {
     if (!user) throw new Error('User not authenticated');
     dispatch({ type: 'SET_LOADING', payload: true });
+
     try {
-      const res = await api.post('/movies', movieData);
+      // ส่งเฉพาะฟิลด์ที่ฟอร์มกรอก ไม่ส่ง createdBy
+      const res = await api.post('/movies', {
+        title: movieData.title,
+        year: movieData.year,
+        rating: movieData.rating,
+      });
+
       const payload = res.data?.data ?? res.data;
+
+
+
       const movie: Movie = {
         id: payload._id ?? payload.id,
         title: payload.title ?? '',
         year: payload.year ?? 0,
         rating: payload.rating ?? '',
-        createdBy: payload.createdBy ?? '',
         createdAt: payload.createdAt ?? '',
         updatedAt: payload.updatedAt ?? '',
       };
+
       dispatch({ type: 'ADD_MOVIE', payload: movie });
+
     } catch (err: any) {
-      dispatch({
-        type: 'SET_ERROR',
-        payload: err.response?.data?.message || err.message,
-      });
-      throw err;
+      const message = err.response?.data?.message || err.message || 'Failed to create movie';
+      dispatch({ type: 'SET_ERROR', payload: message });
+      throw new Error(message);
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
-
   const updateMovie = async (id: string, movieData: UpdateMovieRequest) => {
     if (!user) throw new Error('User not authenticated');
     dispatch({ type: 'SET_LOADING', payload: true });

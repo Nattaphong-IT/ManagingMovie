@@ -103,10 +103,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
 
         <div className="space-y-2 text-sm text-muted">
           <div className="flex items-center space-x-2">
-            <User className="h-4 w-4 text-muted" />
-            <span>Added by {createdByText}</span>
-          </div>
-          <div className="flex items-center space-x-2">
             <Calendar className="h-4 w-4 text-muted" />
             <span>{new Date(movie.createdAt).toLocaleDateString()}</span>
           </div>
@@ -146,19 +142,19 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
                 <Trash2 className="h-4 w-4" />
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
+            <AlertDialogContent className="bg-white text-gray-900 border border-gray-300 shadow-xl rounded-lg p-6 w-[400px]" >
               <AlertDialogHeader>
-                <AlertDialogTitle>Delete Movie</AlertDialogTitle>
-                <AlertDialogDescription>
+                <AlertDialogTitle className="text-lg font-semibold text-red-600">Delete Movie</AlertDialogTitle>
+                <AlertDialogDescription className="text-sm text-gray-700">
                   Are you sure you want to delete &quot;{movie.title}&quot;? This action
                   cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel className="bg-gray-200 text-gray-800 hover:bg-gray-300 px-4 py-2 rounded">Cancel</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={handleDelete}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  className="bg-red-600 text-white hover:bg-red-700 px-4 py-2 rounded"
                 >
                   Delete
                 </AlertDialogAction>

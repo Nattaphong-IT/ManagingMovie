@@ -26,16 +26,21 @@ export const createMovie = async (req, res) => {
   try {
     const { title, year, rating } = req.body;
 
-    const newMovie = new Movie({
+    // ✅ ดึง username จาก req.user
+    const username = req.user?.username;
+    if (!username) {
+      return res.status(400).json({ success: false, message: 'ไม่พบ username ของผู้ใช้ที่ล็อกอิน' });
+    }
+
+    // ✅ ใส่ createdBy จาก username
+    const movie = await Movie.create({
       title,
       year,
       rating,
-      createdBy: req.user.username, // ✅ เก็บเป็นชื่อผู้ใช้เหมือนข้อมูลเก่า
+      createdBy: username,
     });
 
-    await newMovie.save();
-
-    res.status(201).json({ success: true, data: newMovie });
+    res.status(201).json({ success: true, data: movie });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
   }

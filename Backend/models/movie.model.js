@@ -17,10 +17,9 @@ const movieSchema = new mongoose.Schema(
       enum: ["G", "PG", "M", "MA", "R"],
       required: true,
     },
-    createdBy: { // ✅ เพิ่มฟิลด์นี้
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // ต้องตรงกับชื่อ model ของ user
-      required: true,
+    createdBy: { 
+         type: String,
+     required: true,
     },
   },
   { timestamps: true }

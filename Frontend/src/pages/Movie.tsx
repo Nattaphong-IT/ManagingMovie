@@ -57,12 +57,12 @@ export const MoviesPage: React.FC = () => {
     user?.role === 'MANAGER' || user?.role === 'TEAMLEADER';
 
   return (
-    <div className="min-h-screen bg-backgroundStart text-text p-6 space-y-6">
+    <div className="min-h-screen bg-backgroundStart bg-slate-100 p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-primary">Movies</h1>
-          <p className="text-muted">Manage your movie collection</p>
+          <p className="text-primary">Manage your movie collection</p>
         </div>
 
         {canCreateMovie && (

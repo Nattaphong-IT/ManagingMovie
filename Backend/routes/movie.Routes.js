@@ -5,7 +5,7 @@ import {
   createMovie,
   updateMovie,
   deleteMovie,
-} from "../controllers/movie.Controller.js";
+} from "../controllers/movie.controller.js";
 
 import { authenticateToken, authorize } from "../middleware/auth.middleware.js";
 
@@ -28,12 +28,10 @@ router.post(
 );
 
 // 📌 TEAMLEADER และ MANAGER แก้ไขหนังได้
-router.put(
-  "/:id",
-  authenticateToken,
-  authorize("MANAGER", "TEAMLEADER"),
-  updateMovie
-);
+router.route("/:id")
+  .put(authenticateToken, authorize("MANAGER", "TEAMLEADER"), updateMovie)
+  .patch(authenticateToken, authorize("MANAGER", "TEAMLEADER"), updateMovie);
+
 
 // 📌 MANAGER เท่านั้นที่ลบหนังได้
 router.delete(
