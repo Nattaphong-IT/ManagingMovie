@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Button } from '../components/UI/Button';
+import { Button } from '../components/ui/Button';
 
 const NotFound: React.FC = () => {
   const location = useLocation();

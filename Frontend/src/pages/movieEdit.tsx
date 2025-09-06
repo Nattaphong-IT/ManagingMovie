@@ -1,9 +1,9 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MovieForm } from '@/components/movies/MovieForm';
-import { useMovies } from '@/context/MovieContext';     // ดึงจาก backend: context ที่ fetch ข้อมูลหนัง
-import { useAuth } from '@/context/AuthContext';         // ดึงจาก backend: context ที่ fetch ข้อมูล user
-import { useToast } from '@/hooks/use-toast';
+import { MovieForm } from '../components/Movies/MovieForm';
+import { useMovies } from '../context/MovieContext';
+import { useAuth } from '../context/AuthContext';
+import { useToast } from '../hooks/use-toast';
 import { UpdateMovieRequest } from '../../types/movie.type'
 
 export const MovieEditPage: React.FC = () => {
@@ -22,10 +22,10 @@ export const MovieEditPage: React.FC = () => {
       <div className="min-h-screen bg-backgroundStart text-text flex flex-col items-center justify-center p-6">
         <h1 className="text-2xl font-bold text-primary mb-4">Movie Not Found</h1>
         <p className="text-muted mb-6">
-          The movie you're trying to edit doesn't exist.
+           The movie you&apos;re trying to edit doesn&apos;t exist.
         </p>
         <button
-          onClick={() => navigate('/movies')}  // frontend routing
+          onClick={() => navigate('/movies')}
           className="text-primary hover:text-accent"
         >
           Back to Movies
@@ -46,7 +46,7 @@ export const MovieEditPage: React.FC = () => {
       <div className="min-h-screen bg-backgroundStart text-text flex flex-col items-center justify-center p-6">
         <h1 className="text-2xl font-bold text-primary mb-4">Access Denied</h1>
         <p className="text-muted mb-6">
-          You don't have permission to edit this movie.
+         You don&apos;t have permission to edit this movie.
         </p>
         <button
           onClick={() => navigate('/movies')}
@@ -58,10 +58,10 @@ export const MovieEditPage: React.FC = () => {
     );
   }
 
-  // เมื่อส่งฟอร์ม
+  // ✅ เมื่อส่งฟอร์ม - ตอนนี้ UpdateMovieRequest เป็น Partial<CreateMovieRequest> แล้ว
   const handleSubmit = async (data: UpdateMovieRequest) => {
     try {
-      // ดึงจาก backend: update หนัง
+      // ✅ ตอนนี้ไม่มี type error แล้วเพราะ UpdateMovieRequest = Partial<CreateMovieRequest>
       await updateMovie(movie.id, data);
 
       toast({
@@ -79,27 +79,30 @@ export const MovieEditPage: React.FC = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-backgroundStart text-text p-6">
-      <div className="max-w-3xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-primary">Edit Movie</h1>
-          <p className="text-muted">
-            Update "<span className="font-semibold text-text">{movie.title}</span>" details
-          </p>
-        </div>
+return (
+  <div className="min-h-screen bg-backgroundStart text-text p-6">
+    <div className="max-w-3xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold text-primary">Edit Movie</h1>
+        <p className="text-muted">
+          Update &quot;<span className="font-semibold text-text">{movie.title}</span>&quot; details
+        </p>
+      </div>
 
-        {/* Form */}
-        <Card className="bg-surface p-6 rounded-lg shadow">
-          <MovieForm
-            onSubmit={handleSubmit}
-            initialData={movie}
-            isEditing={true}
-            loading={loading}
-          />
-        </Card>
+      {/* Form */}
+      <div className="bg-surface p-6 rounded-lg shadow">
+        <MovieForm
+          onSubmit={handleSubmit}
+          initialData={movie}
+          isEditing={true}
+          loading={loading}
+        />
       </div>
     </div>
-  );
+  </div>
+);
+
 };
+
+export default MovieEditPage;

@@ -1,11 +1,11 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '../components/UI/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/UI/card';
-import { Badge } from '../components/UI/badge';
-import { useMovies } from '@/context/MovieContext';    // ดึง context ที่ fetch มาจาก backend
-import { useAuth } from '@/context/AuthContext';      // ดึง context ที่ fetch มาจาก backend
-import { useToast } from '@/hooks/use-toast';
+import { Button } from '../components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
+import { useMovies } from '../context/MovieContext';    // ดึง context ที่ fetch มาจาก backend
+import { useAuth } from '../context/AuthContext';      // ดึง context ที่ fetch มาจาก backend
+import { useToast } from '../hooks/use-toast';
 import {
     Edit,
     Trash2,
@@ -25,7 +25,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+} from '../components/ui/alert-dialog';
 
 export const MovieDetailsPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();                          // ดึง movie ID จาก URL (frontend)
@@ -45,7 +45,10 @@ export const MovieDetailsPage: React.FC = () => {
                 </div>
                 <h1 className="text-2xl font-bold mb-4">Movie Not Found</h1>
                 <p className="text-muted-foreground mb-4">
-                    The movie you're looking for doesn't exist or has been removed.
+
+                    The movie you&apos;re looking for doesn&apos;t exist or has been removed.
+
+
                 </p>
                 <Button onClick={() => navigate('/movies')} variant="outline">
                     <ArrowLeft className="h-4 w-4 mr-2" />
@@ -154,7 +157,7 @@ export const MovieDetailsPage: React.FC = () => {
                                 <AlertDialogHeader>
                                     <AlertDialogTitle>Delete Movie</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                        Are you sure you want to delete "{movie.title}"? This action cannot be undone.
+                                        Are you sure you want to delete &quot;{movie.title}&quot;? This action cannot be undone.
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
@@ -187,7 +190,7 @@ export const MovieDetailsPage: React.FC = () => {
                                         >
                                             {movie.rating}
                                         </Badge>
-                                        <span className="text-xl text-muted-foreground">{movie.yearReleased}</span>
+                                        <span className="text-xl text-muted-foreground">{movie.year}</span>
                                     </div>
                                 </div>
                             </div>
@@ -217,7 +220,11 @@ export const MovieDetailsPage: React.FC = () => {
                                 <User className="h-4 w-4 text-muted-foreground" />
                                 <div>
                                     <p className="text-sm text-muted-foreground">Added by</p>
-                                    <p className="font-medium">{movie.createdBy}</p>  {/* ข้อมูลจาก backend */}
+                                    <p className="font-medium">
+                                        {typeof movie.createdBy === 'string'
+                                            ? movie.createdBy
+                                            : movie.createdBy?.name || 'Unknown'}
+                                    </p>
                                 </div>
                             </div>
 
@@ -273,3 +280,4 @@ export const MovieDetailsPage: React.FC = () => {
         </div>
     );
 };
+export default MovieDetailsPage;
